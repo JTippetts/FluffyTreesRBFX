@@ -27,6 +27,14 @@
 #include <Urho3D/Resource/XMLElement.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/Resource/JSONValue.h>
+#include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Scene/Node.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/Zone.h>
+
+#include "registercomponents.h"
+#include "Components/editingcamera.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
@@ -57,10 +65,39 @@ void Game::Setup()
     if (!engineParameters_.contains(EP_RESOURCE_PREFIX_PATHS))
         engineParameters_[EP_RESOURCE_PREFIX_PATHS] = ";../share/Resources;../share/Urho3D/Resources";
 
+    RegisterComponents(context_);
 }
 
 void Game::Start()
 {
+    SubscribeToEvent("KeyDown", URHO3D_HANDLER(Game, HandleKeyDown));
+    SubscribeToEvent("KeyUp", URHO3D_HANDLER(Game, HandleKeyUp));
+
+    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    scene_ = MakeShared<Scene>(context_);
+
+    scene_->CreateComponent<Octree>();
+
+    Node* node = scene_->CreateChild("CameraNode");
+    EditingCamera* camera = node->CreateComponent<EditingCamera>();
+    camera->SetCameraBounds(Vector2(-200, -200), Vector2(200, 200));
+    camera->SetScrollSpeed(32.0f);
+    camera->SetMaxFollow(600.f);
+
+    node = scene_->CreateChild("TreeNode");
+    StaticModel* model = node->CreateComponent<StaticModel>();
+    model->SetModel(cache->GetResource<Model>("Models/TreeTrunk.mdl"));
+    model->SetMaterial(cache->GetResource<Material>("Materials/White.xml"));
+
+    model = node->CreateComponent<StaticModel>();
+    model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
+    model->SetMaterial(cache->GetResource<Material>("Materials/White.xml"));
+
+    node = scene_->CreateChild("LightNode");
+    Zone* zone = node->CreateComponent<Zone>();
+    Light* light = node->CreateComponent<Light>();
+    light->SetLightType(LIGHT_DIRECTIONAL);
+    node->SetDirection(Vector3(1.5, -1.5, 3.5));
 }
 
 void Game::Stop()

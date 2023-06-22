@@ -14,20 +14,21 @@ class Game : public Application
 {
 	URHO3D_OBJECT(Game, Application);
 
-	public:
-	explicit Game(Context *context);
+public:
+	explicit Game(Context* context);
 
 	void Setup() override;
 	void Start() override;
 	void Stop() override;
 
-	private:
+private:
+	SharedPtr<Scene> scene_;
 
 	void SetWindowTitleAndIcon();
-    void CreateConsoleAndDebugHud();
+	void CreateConsoleAndDebugHud();
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-    void HandleKeyUp(StringHash eventType, VariantMap& eventData);
-	void HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData);
+	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+	void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
 
-	void HandleUpdate(StringHash eventType, VariantMap &eventData);
+	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 };
