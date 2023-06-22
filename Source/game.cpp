@@ -91,13 +91,22 @@ void Game::Start()
 
     model = node->CreateComponent<StaticModel>();
     model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
-    model->SetMaterial(cache->GetResource<Material>("Materials/White.xml"));
+    model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
 
     node = scene_->CreateChild("LightNode");
     Zone* zone = node->CreateComponent<Zone>();
+    zone->SetAmbientBrightness(0.25f);
+    zone->SetAmbientColor(Color(0.5, 0.5, 0.75));
+    zone->SetBoundingBox(BoundingBox(-100, 100));
     Light* light = node->CreateComponent<Light>();
     light->SetLightType(LIGHT_DIRECTIONAL);
     node->SetDirection(Vector3(1.5, -1.5, 3.5));
+
+    node = scene_->CreateChild("BackLightNode");
+    light = node->CreateComponent<Light>();
+    light->SetLightType(LIGHT_DIRECTIONAL);
+    light->SetColor(Color(0.125, 0.125, 0.25));
+    node->SetDirection(Vector3(-1.5, 1.5, -3.5));
 }
 
 void Game::Stop()
