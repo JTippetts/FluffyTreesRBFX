@@ -1,6 +1,9 @@
 <material>
 	<technique name="Techniques/TreeCrown.xml" />
 	<parameter name="MatSpecColor" value="0 0 0 64" />
+	<parameter name="Scale" value="3" />
+	<parameter name="Blend" value="1" />
+	
 	<texture unit="diffuse" name="Textures/jacarandaclusters.png" />
 	<shader vsdefines="ALPHAMASK" psdefines="ALPHAMASK" />
 	<cull value="none" />

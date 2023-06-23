@@ -72,6 +72,7 @@ void Game::Start()
 {
     SubscribeToEvent("KeyDown", URHO3D_HANDLER(Game, HandleKeyDown));
     SubscribeToEvent("KeyUp", URHO3D_HANDLER(Game, HandleKeyUp));
+    SubscribeToEvent("Update", URHO3D_HANDLER(Game, HandleUpdate));
 
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     scene_ = MakeShared<Scene>(context_);
@@ -84,14 +85,20 @@ void Game::Start()
     camera->SetScrollSpeed(32.0f);
     camera->SetMaxFollow(600.f);
 
-    node = scene_->CreateChild("TreeNode");
-    StaticModel* model = node->CreateComponent<StaticModel>();
-    model->SetModel(cache->GetResource<Model>("Models/TreeTrunk.mdl"));
-    model->SetMaterial(cache->GetResource<Material>("Materials/White.xml"));
+    for (unsigned i = 0; i < 6; ++i)
+    {
+        node = scene_->CreateChild("TreeNode");
+        StaticModel* model = node->CreateComponent<StaticModel>();
+        model->SetModel(cache->GetResource<Model>("Models/TreeTrunk.mdl"));
+        model->SetMaterial(cache->GetResource<Material>("Materials/Brown.xml"));
 
-    model = node->CreateComponent<StaticModel>();
-    model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
-    model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
+        model = node->CreateComponent<StaticModel>();
+        model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
+        model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
+
+        node->SetPosition(Vector3((float)i*12.f, 0, 0));
+        node->SetRotation(Quaternion((float)i * 30.f, Vector3(0, 1, 0)));
+    }
 
     node = scene_->CreateChild("LightNode");
     Zone* zone = node->CreateComponent<Zone>();
@@ -169,6 +176,14 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
 	static StringHash TimeStep("TimeStep"), CameraSetPosition("CameraSetPosition"), position("position");
 	float dt=eventData[TimeStep].GetFloat();
 	
+    auto cache = GetSubsystem<ResourceCache>();
+
+    time_ += dt;
+    if (time_ > 3.f) time_ = 0.f;
+
+    float blend = (time_ - 1.5f) / 1.5f;
+    blend = fabs(blend);
+    //cache->GetResource<Material>("Materials/TreeCrown.xml")->SetShaderParameter("Blend", blend);
 }
 
 

@@ -31,4 +31,6 @@ private:
 	void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
 
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+	float time_{ 0 };
 };
