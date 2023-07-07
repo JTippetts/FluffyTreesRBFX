@@ -33,4 +33,5 @@ private:
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
 	float time_{ 0 };
+	float totaltime_{ 0 };
 };

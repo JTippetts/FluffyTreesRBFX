@@ -1,0 +1,7 @@
+<texturearray>
+	<filter mode="nearest" />
+	<mipmap enable="false" />
+	<layer name="Textures/skycolor.png" />
+	<layer name="Textures/horizoncolor.png" />
+	<layer name="Textures/sunbloom.png" />
+</texturearray>

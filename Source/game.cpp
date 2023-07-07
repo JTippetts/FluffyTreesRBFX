@@ -32,6 +32,7 @@
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Graphics/Zone.h>
+#include <Urho3D/Graphics/Skybox.h>
 
 #include "registercomponents.h"
 #include "Components/editingcamera.h"
@@ -74,6 +75,7 @@ void Game::Start()
     SubscribeToEvent("KeyUp", URHO3D_HANDLER(Game, HandleKeyUp));
     SubscribeToEvent("Update", URHO3D_HANDLER(Game, HandleUpdate));
 
+
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     scene_ = MakeShared<Scene>(context_);
 
@@ -85,18 +87,39 @@ void Game::Start()
     camera->SetScrollSpeed(32.0f);
     camera->SetMaxFollow(600.f);
 
+    Node* skyNode = scene_->CreateChild("Sky");
+    skyNode->SetScale(500.0f); // The scale actually does not matter
+    auto* skybox = skyNode->CreateComponent<Skybox>();
+    skybox->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
+    skybox->SetMaterial(cache->GetResource<Material>("Materials/Skybox.xml"));
+
+
     for (unsigned i = 0; i < 6; ++i)
     {
         node = scene_->CreateChild("TreeNode");
-        StaticModel* model = node->CreateComponent<StaticModel>();
-        model->SetModel(cache->GetResource<Model>("Models/TreeTrunk.mdl"));
-        model->SetMaterial(cache->GetResource<Material>("Materials/Brown.xml"));
 
-        model = node->CreateComponent<StaticModel>();
-        model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
-        model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
+        if (i % 2 == 0)
+        {
+            StaticModel* model = node->CreateComponent<StaticModel>();
+            model->SetModel(cache->GetResource<Model>("Models/TreeTrunk.mdl"));
+            model->SetMaterial(cache->GetResource<Material>("Materials/Brown.xml"));
 
-        node->SetPosition(Vector3((float)i*12.f, 0, 0));
+            model = node->CreateComponent<StaticModel>();
+            model->SetModel(cache->GetResource<Model>("Models/TreeCrown.mdl"));
+            model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
+        }
+        else
+        {
+            StaticModel* model = node->CreateComponent<StaticModel>();
+            model->SetModel(cache->GetResource<Model>("Models/Tree2Trunk.mdl"));
+            model->SetMaterial(cache->GetResource<Material>("Materials/Brown.xml"));
+
+            model = node->CreateComponent<StaticModel>();
+            model->SetModel(cache->GetResource<Model>("Models/Tree2Crown.mdl"));
+            model->SetMaterial(cache->GetResource<Material>("Materials/TreeCrown.xml"));
+        }
+
+        node->SetPosition(Vector3((float)i*20.f, 0, 0));
         node->SetRotation(Quaternion((float)i * 30.f, Vector3(0, 1, 0)));
     }
 
@@ -180,10 +203,18 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
     time_ += dt;
     if (time_ > 3.f) time_ = 0.f;
+    totaltime_ += dt;
 
     float blend = (time_ - 1.5f) / 1.5f;
     blend = fabs(blend);
     //cache->GetResource<Material>("Materials/TreeCrown.xml")->SetShaderParameter("Blend", blend);
+
+    Material* skymat = cache->GetResource<Material>("Materials/Skybox.xml");
+
+    Vector3 sun(0.0, sin(totaltime_ * 0.2617993875), cos(totaltime_ * 0.2617993875));
+    Vector3 moon(0.0, sin(totaltime_ * 0.25), cos(totaltime_ * 0.25));
+    skymat->SetShaderParameter("SunDir", Variant(sun));
+    skymat->SetShaderParameter("MoonDir", Variant(-moon));
 }
 
 
