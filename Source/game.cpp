@@ -210,11 +210,17 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
     //cache->GetResource<Material>("Materials/TreeCrown.xml")->SetShaderParameter("Blend", blend);
 
     Material* skymat = cache->GetResource<Material>("Materials/Skybox.xml");
+    Matrix3 sunTransform;
+    sunTransform.FromAngleAxis(totaltime_ * 10.f, Vector3(0, 0, 1));
 
     Vector3 sun(0.0, sin(totaltime_ * 0.2617993875), cos(totaltime_ * 0.2617993875));
     Vector3 moon(0.0, sin(totaltime_ * 0.25), cos(totaltime_ * 0.25));
-    skymat->SetShaderParameter("SunDir", Variant(sun));
-    skymat->SetShaderParameter("MoonDir", Variant(-moon));
+    moonTransform_.FromAngleAxis(totaltime_ * 12.f+180.f, Vector3(0, 0.0, 1));
+    skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
+    //skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Row(0)));
+    skymat->SetShaderParameter("MoonDir", Variant(moon));
+    skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
+   // Matrix3
 }
 
 

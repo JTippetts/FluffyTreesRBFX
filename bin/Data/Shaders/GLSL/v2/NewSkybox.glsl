@@ -14,6 +14,7 @@ UNIFORM_BUFFER_BEGIN(4, Material)
 	UNIFORM(vec3 cSunColor)
 	UNIFORM(float cSunRadius)
 	UNIFORM(float cMoonRadius)
+	UNIFORM(mat3 cMoonTransform)
 UNIFORM_BUFFER_END(4, Material)
 
 #include "_Samplers.glsl"
@@ -24,6 +25,7 @@ UNIFORM_BUFFER_END(4, Material)
 
 VERTEX_OUTPUT_HIGHP(vec3 vViewDir)
 uniform sampler2DArray sGradients0;
+uniform sampler2D sMoonDiff1;
 
 #ifdef URHO3D_VERTEX_SHADER
 void main()
@@ -58,6 +60,20 @@ float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
     return -b - h;
 }
 
+vec3 moonTexture(vec3 normal)
+{
+	vec3 nnormal = normal;// * cMoonTransform;
+	vec2 tc;
+	tc.y = nnormal.y;
+    tc.x = normalize(nnormal).x * 0.5;
+
+    float s = sign(nnormal.z) * 0.5;
+
+    tc.s = 0.75 - s * (0.5 - tc.s);
+    tc.t = 0.5 + 0.5 * tc.t;
+	return texture(sMoonDiff1, tc).rgb;
+}
+
 void main()
 {
 	vec3 viewDir = normalize(vViewDir);
@@ -84,7 +100,8 @@ void main()
 	float moonMask = moonIntersect > -1 ? 1 : 0;
 	vec3 moonNormal = normalize(cMoonDir - viewDir * moonIntersect);
 	float moonNdotL = clamp(dot(moonNormal, -cSunDir), 0, 1);
-	vec3 moonColor = vec3(moonMask * moonNdotL);
+	vec3 moonTex = moonTexture(moonNormal);
+	vec3 moonColor = vec3(moonMask * moonNdotL) * moonTex;
 
 	vec3 col = skyColor + sunColor + moonColor;
 

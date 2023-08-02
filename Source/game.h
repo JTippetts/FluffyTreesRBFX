@@ -34,4 +34,5 @@ private:
 
 	float time_{ 0 };
 	float totaltime_{ 0 };
+	Matrix3 moonTransform_;
 };
