@@ -1,5 +1,7 @@
 #include "game.h"
 
+// https://kelvinvanhoorn.com/2022/03/17/skybox-tutorial-part-1/
+
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/UI/Cursor.h>
@@ -219,7 +221,12 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
     skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
     //skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Row(0)));
     skymat->SetShaderParameter("MoonDir", Variant(moon));
-    skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
+    //skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
+    Vector3 mxaxis = moonTransform_.Column(0);
+    Vector3 myaxis = moonTransform_.Column(1);
+    Vector3 mzaxis = moonTransform_.Column(2);
+    Matrix3 invmoon = Quaternion(-mxaxis, -myaxis, -mzaxis).RotationMatrix();
+    skymat->SetShaderParameter("MoonTransform", Variant(invmoon));
    // Matrix3
 }
 
