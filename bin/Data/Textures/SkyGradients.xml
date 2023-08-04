@@ -4,4 +4,5 @@
 	<layer name="Textures/skycolor.png" />
 	<layer name="Textures/horizoncolor.png" />
 	<layer name="Textures/sunbloom.png" />
+	<layer name="Textures/cloudcolor.png" />
 </texturearray>

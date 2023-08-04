@@ -217,15 +217,13 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
     Vector3 sun(0.0, sin(totaltime_ * 0.2617993875), cos(totaltime_ * 0.2617993875));
     Vector3 moon(0.0, sin(totaltime_ * 0.25), cos(totaltime_ * 0.25));
-    moonTransform_.FromAngleAxis(totaltime_ * 12.f+180.f, Vector3(0, 0.0, 1));
+    moonTransform_.FromAngleAxis(totaltime_ * 12.f+180.f, Vector3(1, 0.0, 0));
     skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
-    //skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Row(0)));
-    skymat->SetShaderParameter("MoonDir", Variant(moon));
+    skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
+    //skymat->SetShaderParameter("MoonDir", Variant(moon));
     //skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
-    Vector3 mxaxis = moonTransform_.Column(0);
-    Vector3 myaxis = moonTransform_.Column(1);
-    Vector3 mzaxis = moonTransform_.Column(2);
-    Matrix3 invmoon = Quaternion(-mxaxis, -myaxis, -mzaxis).RotationMatrix();
+    Matrix3 invmoon;
+    invmoon.FromAngleAxis(-(totaltime_ * 12.f+180.f), Vector3(1, 0, 0));
     skymat->SetShaderParameter("MoonTransform", Variant(invmoon));
    // Matrix3
 }

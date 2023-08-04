@@ -78,9 +78,11 @@ float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
 
 vec3 moonTexture(vec3 normal)
 {
-	vec3 nnormal = normal;// * cMoonTransform;
+	vec3 nnormal = normal * cMoonTransform;
 	vec2 tc;
 	tc = nnormal.xy * 0.5 + 0.5;
+	
+	// Equirectangular projection
 	//tc.y = nnormal.y;
    // tc.x = normalize(nnormal).x * 0.5;
 
@@ -110,7 +112,7 @@ void main()
 	vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColor;
 	
 	float sunMask = GetSunMask(sunViewDot, cSunRadius);
-    vec3 sunColor = cSunColor * sunMask;
+    vec3 sunColor = cSunColor * sunMask * step(0.01, vPos.y);
 	
 	// The moon
 	float moonIntersect = sphIntersect(viewDir, cMoonDir, cMoonRadius);
@@ -118,14 +120,17 @@ void main()
 	vec3 moonNormal = normalize(cMoonDir - viewDir * moonIntersect);
 	float moonNdotL = clamp(dot(moonNormal, -cSunDir), 0, 1);
 	vec3 moonTex = moonTexture(moonNormal);
-	vec3 moonColor = vec3(moonMask * moonNdotL) * moonTex;
-
-	vec3 col = skyColor + sunColor + moonColor;
+	vec3 moonColor = vec3(moonMask * moonNdotL) * moonTex * step(0.01, vPos.y);
+	//vec3 moonColor = moonTex*moonMask*0.5;
 	
-	vec3 cloudColor = texture(sGradients0, vec3(sunZenithDot01, 0.5, 0)).rgb; // TODO
+	vec3 stars = (mix(0, step(0.95, snoise(vPos*40.0)), step(0.01, vPos.y)).xxx * max(0, min(1, -cSunDir.y))) * (1.0 - moonMask) * (1.0 - svMask);
+
+	vec3 col = skyColor + sunColor + moonColor + stars;
+	
+	vec3 cloudColor = texture(sGradients0, vec3(sunZenithDot01, 0.5, 3)).rgb; // TODO
 	float cirrus = 1.5;
-	float cumulus = 2.5;
-	float cumulusbright = 1.9;
+	float cumulus = 1.5;
+	float cumulusbright = 1.0;
 	float cloudtime = 1.0;
 	
 	float density = smoothstep(1.0 - cirrus, 1.0, fbm((vPos.xyz / vPos.y * 2.0 + cloudtime * 0.05)*0.3)) * 0.3;
@@ -138,6 +143,9 @@ void main()
 		//density = smoothstep(1.0 - cumulus, 1.0, fbm((0.7 + float(i) * 0.01) * pos.xyz / pos.y + cloudtime * 0.3));
 		col.rgb = mix(col.rgb, cloudColor * density * cumulusbright, min(density*1.5, 1.0) * max(vPos.y, 0.0));
 	}
+	
+	// dither a bit
+	col.rgb += snoise(vPos * 1000) * 0.01;
 
     gl_FragColor=GammaToLightSpaceAlpha(vec4(col,1));
 }
