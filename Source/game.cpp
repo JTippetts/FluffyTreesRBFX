@@ -93,7 +93,7 @@ void Game::Start()
     Node* skyNode = scene_->CreateChild("Sky");
     skyNode->SetScale(500.0f); // The scale actually does not matter
     auto* skybox = skyNode->CreateComponent<Skybox>();
-    skybox->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
+    skybox->SetModel(cache->GetResource<Model>("Models/Icosphere.mdl"));
     skybox->SetMaterial(cache->GetResource<Material>("Materials/Skybox.xml"));
 
 
@@ -216,10 +216,9 @@ void Game::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     Material* skymat = cache->GetResource<Material>("Materials/Skybox.xml");
     Matrix3 sunTransform;
-    sunTransform.FromAngleAxis(totaltime_ * 12.f, Vector3(0, 0, 1));
+    sunTransform.FromAngleAxis(totaltime_ * 3.f, Vector3(0, 0, 1));
 
-    Vector3 sun(0.0, sin(totaltime_ * 0.2617993875f), cos(totaltime_ * 0.2617993875f));
-    moonTransform_.FromAngleAxis(totaltime_ * 12.f + 180.f, Vector3(1, 0.0, 0));
+    moonTransform_.FromAngleAxis(totaltime_ * 3.f + 180.f, Vector3(1, 0.0, 0));
     skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
     skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
     //skymat->SetShaderParameter("MoonDir", Variant(moon));
@@ -253,7 +252,7 @@ void Game::HandleUpdate(StringHash eventType, VariantMap& eventData)
     //skymat->SetShaderParameter("Cumulus", Variant(cumulus));
     //skymat->SetShaderParameter("CumulusBright", Variant(cumulusbright));
     //skymat->SetShaderParameter("CloudTime", Variant(totaltime_));
-    skymat->SetShaderParameter("CloudData", Variant(Vector4(cirrus, cumulus, cumulusbright, totaltime_)));
+    skymat->SetShaderParameter("CloudData", Variant(Vector4(cirrus, cumulus, cumulusbright, totaltime_*0.5f)));
 }
 
 

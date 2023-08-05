@@ -37,13 +37,13 @@ uniform sampler2D sMoonDiff1;
 void main()
 {
     mat4 modelMatrix = GetModelMatrix();
-    vec4 worldPos = vec4(iPos.xyz, 0.0) * modelMatrix;
+	vSkyPos = normalize(iPos.xyz);
+	
+	vec4 worldPos = vec4(iPos.xyz, 0.0) * modelMatrix;
     worldPos.xyz += cCameraPos;
     worldPos.w = 1.0;
-	vSkyPos = normalize(iPos.xyz);
     gl_Position = worldPos * cViewProj;
     gl_Position.z = gl_Position.w;
-    vViewDir = normalize(iPos.xyz);
 }
 #endif
 
@@ -87,7 +87,7 @@ vec3 moonTexture(vec3 normal)
 
 void main()
 {
-	vec3 viewDir = normalize(vViewDir);
+	vec3 viewDir = normalize(vSkyPos);
 	float sunViewDot = dot(cSunDir, viewDir);
 	float sunZenithDot = cSunDir.y;
 	float viewZenithDot = viewDir.y;
@@ -122,7 +122,7 @@ void main()
 	sunColor *= (1 - moonMask) * mix(1, 16, solarEclipse01);
 	
 	// Stars
-	float starnoise = snoise(vSkyPos*40.0+12);
+	float starnoise = snoise(vSkyPos*60.0+12);
 	float starmask = step(0.95, starnoise);
 	vec3 starcolor = texture(sGradients0, vec3(snoise(vSkyPos*40.0+20), 0.5, 4)).rgb * starmask * horizon * max(0, min(1, -cSunDir.y)) * (1.0 - moonMask) * (1.0 - svMask);
 
