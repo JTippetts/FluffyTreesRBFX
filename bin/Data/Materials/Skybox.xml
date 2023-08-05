@@ -5,7 +5,6 @@
     <cull value="none" />
 	<parameter name="SunDir" value="1 0 0"/>
 	<parameter name="MoonDir" value="-1 0 0"/>
-	<parameter name="SunColor" value="1 0.85 0.75" />
-	<parameter name="SunRadius" value="0.05" />
-	<parameter name="MoonRadius" value="0.045" />
+	<parameter name="SunColor" value="0.5 0.45 0.15" />
+	<parameter name="Radii" value="0.025 0.035" />
 </material>

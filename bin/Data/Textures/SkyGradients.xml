@@ -5,4 +5,5 @@
 	<layer name="Textures/horizoncolor.png" />
 	<layer name="Textures/sunbloom.png" />
 	<layer name="Textures/cloudcolor.png" />
+	<layer name="Textures/starcolor.png" />
 </texturearray>

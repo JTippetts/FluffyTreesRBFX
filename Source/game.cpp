@@ -35,6 +35,7 @@
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Graphics/Skybox.h>
+#include <Urho3D/Math/Random.h>
 
 #include "registercomponents.h"
 #include "Components/editingcamera.h"
@@ -196,16 +197,18 @@ void Game::HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData)
 
 }
 
-void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
+void Game::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-	static StringHash TimeStep("TimeStep"), CameraSetPosition("CameraSetPosition"), position("position");
-	float dt=eventData[TimeStep].GetFloat();
-	
+    static StringHash TimeStep("TimeStep"), CameraSetPosition("CameraSetPosition"), position("position");
+    float dt = eventData[TimeStep].GetFloat();
+
     auto cache = GetSubsystem<ResourceCache>();
 
     time_ += dt;
     if (time_ > 3.f) time_ = 0.f;
     totaltime_ += dt;
+
+    weathertime_ -= dt;
 
     float blend = (time_ - 1.5f) / 1.5f;
     blend = fabs(blend);
@@ -213,19 +216,44 @@ void Game::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
     Material* skymat = cache->GetResource<Material>("Materials/Skybox.xml");
     Matrix3 sunTransform;
-    sunTransform.FromAngleAxis(totaltime_ * 10.f, Vector3(0, 0, 1));
+    sunTransform.FromAngleAxis(totaltime_ * 12.f, Vector3(0, 0, 1));
 
-    Vector3 sun(0.0, sin(totaltime_ * 0.2617993875), cos(totaltime_ * 0.2617993875));
-    Vector3 moon(0.0, sin(totaltime_ * 0.25), cos(totaltime_ * 0.25));
-    moonTransform_.FromAngleAxis(totaltime_ * 12.f+180.f, Vector3(1, 0.0, 0));
+    Vector3 sun(0.0, sin(totaltime_ * 0.2617993875f), cos(totaltime_ * 0.2617993875f));
+    moonTransform_.FromAngleAxis(totaltime_ * 12.f + 180.f, Vector3(1, 0.0, 0));
     skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
     skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
     //skymat->SetShaderParameter("MoonDir", Variant(moon));
     //skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
     Matrix3 invmoon;
-    invmoon.FromAngleAxis(-(totaltime_ * 12.f+180.f), Vector3(1, 0, 0));
+    invmoon.FromAngleAxis(-(totaltime_ * 12.f + 180.f), Vector3(1, 0, 0));
     skymat->SetShaderParameter("MoonTransform", Variant(invmoon));
-   // Matrix3
+
+    auto rnd = []()->float
+    {
+        return Rand() / 32767.f;
+    };
+
+    if (weathertime_ <= 0.0f)
+    {
+        currentweather_ = nextweather_;
+        nextweather_.cirrus_ = rnd() * 1.5f;
+        nextweather_.cumulus_ = rnd() * 2.f;
+        nextweather_.cumulusbright_ = 1.f + rnd() * 1.f;
+        weathertime_ = rnd() * 3.f + 1.f;
+        weatherinterval_ = weathertime_;
+    }
+
+    float t = weathertime_ / weatherinterval_;
+    t = std::min(1.f, std::max(0.f, 1.f - t));
+    float cirrus = currentweather_.cirrus_ + t * (nextweather_.cirrus_ - currentweather_.cirrus_);
+    float cumulus = currentweather_.cumulus_ + t * (nextweather_.cumulus_ - currentweather_.cumulus_);
+    float cumulusbright = currentweather_.cumulusbright_ + t * (nextweather_.cumulusbright_ - currentweather_.cumulusbright_);
+
+    //skymat->SetShaderParameter("Cirrus", Variant(cirrus));
+    //skymat->SetShaderParameter("Cumulus", Variant(cumulus));
+    //skymat->SetShaderParameter("CumulusBright", Variant(cumulusbright));
+    //skymat->SetShaderParameter("CloudTime", Variant(totaltime_));
+    skymat->SetShaderParameter("CloudData", Variant(Vector4(cirrus, cumulus, cumulusbright, totaltime_)));
 }
 
 

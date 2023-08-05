@@ -35,4 +35,14 @@ private:
 	float time_{ 0 };
 	float totaltime_{ 0 };
 	Matrix3 moonTransform_;
+
+	struct WeatherState
+	{
+		float cirrus_{ 0 };
+		float cumulus_{ 0 };
+		float cumulusbright_{ 1 };
+	};
+
+	WeatherState currentweather_, nextweather_;
+	float weathertime_{ 1 }, weatherinterval_{ 1 };
 };
