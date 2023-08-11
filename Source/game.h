@@ -5,10 +5,10 @@
 #include <Urho3D/Scene/Node.h>
 
 #include <vector>
+#include "skyandweather.h"
 
 // All Urho3D classes reside in namespace Urho3D
 using namespace Urho3D;
-
 
 class Game : public Application
 {
@@ -23,6 +23,7 @@ public:
 
 private:
 	SharedPtr<Scene> scene_;
+	SharedPtr<SkyAndWeather> skyandweather_;
 
 	void SetWindowTitleAndIcon();
 	void CreateConsoleAndDebugHud();

@@ -36,6 +36,7 @@
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Graphics/Skybox.h>
 #include <Urho3D/Math/Random.h>
+#include <Urho3D/Graphics/Terrain.h>
 
 #include "registercomponents.h"
 #include "Components/editingcamera.h"
@@ -52,16 +53,18 @@ void Game::Setup()
 {
     // Modify engine startup parameters
 	GetSubsystem<FileSystem>()->Delete(GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs") + GetTypeName() + ".log");
+    engineParameters_[EP_ORGANIZATION_NAME] = "JTippetts";
+    engineParameters_[EP_APPLICATION_NAME] = "Fluffy Trees";
     engineParameters_[EP_WINDOW_TITLE] = GetTypeName();
     engineParameters_[EP_LOG_NAME]     = GetSubsystem<FileSystem>()->GetAppPreferencesDir("urho3d", "logs") + GetTypeName() + ".log";
     engineParameters_[EP_FULL_SCREEN]  = false;
     engineParameters_[EP_HEADLESS]     = false;
     engineParameters_[EP_SOUND]        = true;
 	engineParameters_[EP_LOG_LEVEL]     = LOG_DEBUG;
-	engineParameters_[EP_WINDOW_WIDTH] = WINDOW_WIDTH;
-	engineParameters_[EP_WINDOW_HEIGHT] = WINDOW_HEIGHT;
 	engineParameters_[EP_WINDOW_MAXIMIZE] = true;
 	engineParameters_[EP_WINDOW_RESIZABLE] = true;
+    //engineParameters_[EP_SHADER_LOG_SOURCES] = true;
+    engineParameters_[EP_CONFIG_NAME] = "";
 
     // Construct a search path to find the resource prefix with two entries:
     // The first entry is an empty path which will be substituted with program/bin directory -- this entry is for binary when it is still in build tree
@@ -78,26 +81,43 @@ void Game::Start()
     SubscribeToEvent("KeyUp", URHO3D_HANDLER(Game, HandleKeyUp));
     SubscribeToEvent("Update", URHO3D_HANDLER(Game, HandleUpdate));
 
-
+    
+    context_->RegisterSubsystem(new SkyAndWeather(context_));
+    SkyAndWeather* sky = GetSubsystem<SkyAndWeather>();
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     scene_ = MakeShared<Scene>(context_);
 
     scene_->CreateComponent<Octree>();
+
+    
+    sky->AddMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
+    // Setup terrain
+    Node* tnode = scene_->CreateChild("Terrain");
+    Terrain* terrain = tnode->CreateComponent<Terrain>();
+
+    Image* hmap = cache->GetResource<Image>("Textures/elevation.png");
+ 
+    terrain->SetHeightMap(hmap);
+    terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
+    terrain->SetCastShadows(true);
+    
 
     Node* node = scene_->CreateChild("CameraNode");
     EditingCamera* camera = node->CreateComponent<EditingCamera>();
     camera->SetCameraBounds(Vector2(-200, -200), Vector2(200, 200));
     camera->SetScrollSpeed(32.0f);
     camera->SetMaxFollow(600.f);
+    camera->SetFarClip(600.f);
 
     Node* skyNode = scene_->CreateChild("Sky");
     skyNode->SetScale(500.0f); // The scale actually does not matter
     auto* skybox = skyNode->CreateComponent<Skybox>();
     skybox->SetModel(cache->GetResource<Model>("Models/Icosphere.mdl"));
     skybox->SetMaterial(cache->GetResource<Material>("Materials/Skybox.xml"));
+    sky->AddMaterial(cache->GetResource<Material>("Materials/Skybox.xml"));
 
 
-    for (unsigned i = 0; i < 6; ++i)
+    /*for (unsigned i = 0; i < 6; ++i)
     {
         node = scene_->CreateChild("TreeNode");
 
@@ -124,13 +144,17 @@ void Game::Start()
 
         node->SetPosition(Vector3((float)i*20.f, 0, 0));
         node->SetRotation(Quaternion((float)i * 30.f, Vector3(0, 1, 0)));
-    }
+    }*/
 
     node = scene_->CreateChild("LightNode");
     Zone* zone = node->CreateComponent<Zone>();
     zone->SetAmbientBrightness(0.25f);
     zone->SetAmbientColor(Color(0.5, 0.5, 0.75));
-    zone->SetBoundingBox(BoundingBox(-100, 100));
+    zone->SetBoundingBox(BoundingBox(-10000, 10000));
+    zone->SetFogStart(400.f);
+    zone->SetFogEnd(600.f);
+    zone->SetFogColor(Color(0.25f, 0.25f, 0.35f));
+
     Light* light = node->CreateComponent<Light>();
     light->SetLightType(LIGHT_DIRECTIONAL);
     node->SetDirection(Vector3(1.5, -1.5, 3.5));
@@ -206,26 +230,24 @@ void Game::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     time_ += dt;
     if (time_ > 3.f) time_ = 0.f;
-    totaltime_ += dt;
+    totaltime_ += dt*0.1f;
 
     weathertime_ -= dt;
 
     float blend = (time_ - 1.5f) / 1.5f;
     blend = fabs(blend);
-    //cache->GetResource<Material>("Materials/TreeCrown.xml")->SetShaderParameter("Blend", blend);
-
+    
     Material* skymat = cache->GetResource<Material>("Materials/Skybox.xml");
     Matrix3 sunTransform;
-    sunTransform.FromAngleAxis(totaltime_ * 3.f, Vector3(0, 0, 1));
+    sunTransform.FromAngleAxis(totaltime_ * 12.f, Vector3(0, 0, 1));
 
-    moonTransform_.FromAngleAxis(totaltime_ * 3.f + 180.f, Vector3(1, 0.0, 0));
-    skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
-    skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
-    //skymat->SetShaderParameter("MoonDir", Variant(moon));
-    //skymat->SetShaderParameter("MoonTransform", Variant(moonTransform_.Inverse()));
+    moonTransform_.FromAngleAxis(totaltime_ * 12.f + 180.f, Vector3(1, 0.0, 0));
+   //skymat->SetShaderParameter("SunDir", Variant(sunTransform.Column(0)));
+   //skymat->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
     Matrix3 invmoon;
-    invmoon.FromAngleAxis(-(totaltime_ * 12.f + 180.f), Vector3(1, 0, 0));
-    skymat->SetShaderParameter("MoonTransform", Variant(invmoon));
+    //invmoon.FromAngleAxis(-(totaltime_ * 12.f + 180.f), Vector3(1, 0, 0));
+    invmoon = moonTransform_.Inverse();
+   //skymat->SetShaderParameter("MoonTransform", Variant(invmoon));
 
     auto rnd = []()->float
     {

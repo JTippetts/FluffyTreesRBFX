@@ -1,7 +1,6 @@
 <material>
     <technique name="Techniques/NewDiffSkybox.xml" />
-    <texture unit="0" name="Textures/SkyGradients.xml" />
-	<texture unit="1" name="Textures/moon.png" />
+    <texture slot="Gradients0" name="Textures/sky.png" />
     <cull value="none" />
 	<parameter name="SunDir" value="1 0 0"/>
 	<parameter name="MoonDir" value="-1 0 0"/>
