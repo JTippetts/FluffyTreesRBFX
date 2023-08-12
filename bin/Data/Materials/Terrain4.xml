@@ -3,19 +3,16 @@
     <texture slot="WeightMap0" name="Textures/blend0.png" />
     <texture slot="DetailMap1" name="Textures/terraindiff.xml" />
     <texture slot="Normal2" name="Textures/terrainnormal.xml" />
+	<texture slot="Gradients0" name="Textures/sky.png" />
     <parameter name="MatSpecColor" value="0.0125 0.0125 0.0125 4" />
     <parameter name="DetailTiling" value="0.1 0.1 0.1" />
 	<parameter name="LayerScaling" value="2 2 2 2" />
 	<shadowcull value="none" />
-	<shader vsdefines="SCATTERING" psdefines="TRIPLANAR REDUCETILING SMOOTHBLEND NORMALMAP SCATTERING" />
-	<parameter name="TimeOfDay" value="10" />
-	<parameter name="Cloudtime" value="0" />
-	<parameter name="Cirrus" value="0.8" />
-	<parameter name="Cumulus" value="0.7" />
-	<parameter name="CumulusBrightness" value="2.0" />
-	<parameter name="Br" value="0.002" />
-	<parameter name="Bm" value="0.0069" />
-	<parameter name="G" value="1" />
+	<shader vsdefines="SCATTERING NORMALMAP" psdefines="TRIPLANAR REDUCETILING SMOOTHBLEND NORMALMAP SCATTERING" />
+	<parameter name="SunDir" value="1 0 0"/>
+	<parameter name="MoonDir" value="-1 0 0"/>
+	<parameter name="SunColor" value="0.5 0.45 0.15" />
+	<parameter name="Radii" value="0.025 0.035" />
 	<parameter name="Roughness" value = "0" />
 	<parameter name="Metallic" value = "1" />
 	<parameter name="DielectricReflectance" value = "1" />

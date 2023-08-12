@@ -16,6 +16,28 @@ void SkyAndWeather::AddMaterial(Material* m)
 	materials_.push_back(WeakPtr<Material>(m));
 }
 
+void SkyAndWeather::SetupLights(Scene* scene)
+{
+	Node* n = scene->GetChild("SunLightNode", true);
+	if (n) n->Remove();
+	n = scene->GetChild("MoonLightNode", true);
+	if (n) n->Remove();
+
+	n = scene->CreateChild("SunLightNode");
+	sunlightnode_ = n;
+	sunlight_ = n->CreateComponent<Light>();
+	sunlight_->SetLightType(LIGHT_DIRECTIONAL);
+	sunlight_->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+	sunlight_->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
+
+	n = scene->CreateChild("MoonLightNode");
+	moonlightnode_ = n;
+	moonlight_ = n->CreateComponent<Light>();
+	moonlight_->SetLightType(LIGHT_DIRECTIONAL);
+	moonlight_->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+	moonlight_->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
+}
+
 void SkyAndWeather::CalculateTransforms()
 {
 	float dayprogress = timeOfDay_ / hoursPerDay_;
@@ -89,4 +111,38 @@ void SkyAndWeather::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 	CalculateTransforms();
 	UpdateMaterials();
+
+	// Calculate lights
+	Vector3 sundir = sunTransform_.Column(2);
+	Vector3 moondir = moonTransform_.Column(2);
+
+	sunlightnode_->SetDirection(-sundir);
+	moonlightnode_->SetDirection(-moondir);
+
+	float sunbright = SmoothStep(-0.05f, 0.1f, sundir.y_) * 0.75f;
+	float moonbright = SmoothStep(-0.05f, 0.1f, moondir.y_) * 0.25f;
+
+	sunlight_->SetBrightness(sunbright);
+	moonlight_->SetBrightness(moonbright);
+
+	sunlight_->SetCastShadows(sunbright > 0.f);
+	moonlight_->SetCastShadows(moonbright > 0.f);
+
+	/*if (sunbright > moonbright && sunbright > 0.f)
+	{
+		sunlight_->SetCastShadows(true);
+		moonlight_->SetCastShadows(false);
+	}
+	else
+	{
+		sunlight_->SetCastShadows(false);
+		if (moonbright > 0.f)
+		{
+			moonlight_->SetCastShadows(true);
+		}
+		else
+		{
+			moonlight_->SetCastShadows(false);
+		}
+	}*/
 }

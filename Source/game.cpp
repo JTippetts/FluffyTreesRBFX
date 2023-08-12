@@ -107,7 +107,7 @@ void Game::Start()
     camera->SetCameraBounds(Vector2(-200, -200), Vector2(200, 200));
     camera->SetScrollSpeed(32.0f);
     camera->SetMaxFollow(600.f);
-    camera->SetFarClip(600.f);
+    camera->SetFarClip(700.f);
 
     Node* skyNode = scene_->CreateChild("Sky");
     skyNode->SetScale(500.0f); // The scale actually does not matter
@@ -155,7 +155,9 @@ void Game::Start()
     zone->SetFogEnd(600.f);
     zone->SetFogColor(Color(0.25f, 0.25f, 0.35f));
 
-    Light* light = node->CreateComponent<Light>();
+    sky->SetupLights(scene_);
+
+    /*Light* light = node->CreateComponent<Light>();
     light->SetLightType(LIGHT_DIRECTIONAL);
     node->SetDirection(Vector3(1.5, -1.5, 3.5));
 
@@ -163,7 +165,7 @@ void Game::Start()
     light = node->CreateComponent<Light>();
     light->SetLightType(LIGHT_DIRECTIONAL);
     light->SetColor(Color(0.125, 0.125, 0.25));
-    node->SetDirection(Vector3(-1.5, 1.5, -3.5));
+    node->SetDirection(Vector3(-1.5, 1.5, -3.5));*/
 }
 
 void Game::Stop()

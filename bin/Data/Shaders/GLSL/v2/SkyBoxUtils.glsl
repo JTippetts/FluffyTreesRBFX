@@ -78,7 +78,7 @@ vec3 skycolor()
 		vec3 moonNormal = normalize(cMoonDir - viewDir * moonIntersect);
 		float moonNdotL = clamp(dot(moonNormal, -cSunDir), 0, 1);
 		vec3 moonTex = moonTexture(moonNormal);
-		vec3 moonColor = vec3(moonMask * moonNdotL) * moonTex;// * horizon;
+		vec3 moonColor = vec3(moonMask * moonNdotL) * moonTex * 2.0;// * horizon;
 	#else
 		vec3 moonColor = vec3(0,0,0);
 	#endif

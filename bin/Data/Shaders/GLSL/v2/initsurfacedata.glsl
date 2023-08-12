@@ -1,6 +1,7 @@
 // Initialize surfaceData
 
 #ifdef URHO3D_PIXEL_SHADER
+#ifndef URHO3D_DEPTH_ONLY_PASS
 void InitSurfaceData(inout SurfaceData sd)
 {
 	sd.fogFactor = 0;
@@ -61,4 +62,5 @@ void InitSurfaceData(inout SurfaceData sd)
 	#endif
 	//return sd;
 }
+#endif
 #endif

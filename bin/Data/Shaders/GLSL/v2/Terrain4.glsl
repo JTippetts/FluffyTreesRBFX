@@ -1,7 +1,15 @@
 #define URHO3D_CUSTOM_MATERIAL_UNIFORMS
+#define DITHERING
+//#define DRAW_SUN
+//#define DRAW_MOON
+//#define DRAW_STARS
+//#define DRAW_CLOUDS
 
-#define URHO3D_VERTEX_NEED_TANGENT
+#define URHO3D_VERTEX_HAS_TANGENT
 #define URHO3D_PIXEL_NEED_TANGENT
+#define URHO3D_PIXEL_NEED_NORMAL
+#define URHO3D_VERTEX_HAS_NORMAL
+#define URHO3D_SURFACE_NEED_NORMAL
 
 #include "_Config.glsl"
 #include "_Uniforms.glsl"
@@ -12,36 +20,40 @@ UNIFORM_BUFFER_BEGIN(4, Material)
     UNIFORM(vec3 cDetailTiling)
 	UNIFORM(vec4 cLayerScaling)
 	#ifdef SCATTERING
-		UNIFORM(float cTimeOfDay)
-		UNIFORM(float cCloudTime)
-		UNIFORM(float cCirrus)
-		UNIFORM(float cCumulus)
-		UNIFORM(float cCumulusBrightness)
-		UNIFORM(float cBr)
-		UNIFORM(float cBm)
-		UNIFORM(float cG)
+		UNIFORM(vec3 cSunDir)
+		UNIFORM(vec3 cMoonDir)
+		UNIFORM(vec3 cSunColor)
+		UNIFORM(vec2 cRadii) 
+		// Sun=x Moon=y
+		UNIFORM(mat3 cMoonTransform)
+		UNIFORM(vec4 cCloudData)
 	#endif
 UNIFORM_BUFFER_END(4, Material)
 
 #include "_Material.glsl"
-#include "skyutil.glsl"
+//#include "skyutil.glsl"
 
 #include "initsurfacedata.glsl"
 VERTEX_OUTPUT_HIGHP(vec3 vDetailTexCoord)
 
 #ifdef SCATTERING
-	VERTEX_OUTPUT_HIGHP(vec3 vSun)
-	VERTEX_OUTPUT_HIGHP(vec3 vFogPos)
+	//VERTEX_OUTPUT_HIGHP(vec3 vSun)
+	//VERTEX_OUTPUT_HIGHP(vec3 vSkyPos)
+	VERTEX_OUTPUT_HIGHP(vec3 vSkyPos)
 #endif
 
 SAMPLER(1, sampler2D sWeightMap0)
-SAMPLER(2, sampler2DArray sDetailMap1)
+SAMPLER(4, sampler2DArray sDetailMap1)
 //uniform sampler2D sWeightMap0;
 //uniform sampler2DArray sDetailMap1;
 #ifdef NORMALMAP
 	//uniform sampler2DArray sNormal2;
 	SAMPLER(3, sampler2DArray sNormal2)
 #endif
+
+SAMPLER(5, sampler2D sGradients0)
+
+#include "SkyBoxUtils.glsl"
 
 #ifdef URHO3D_VERTEX_SHADER
 void main()
@@ -56,11 +68,10 @@ void main()
 	
 	
 	#ifdef SCATTERING
-		 mat4 modelMatrix = GetModelMatrix();
-		 vec4 wPos = vec4(iPos.xyz, 0.0) * modelMatrix;
-		vSun = vec3(cos(cTimeOfDay * 0.2617993875), sin(cTimeOfDay * 0.2617993875), 0);
-		vFogPos = vertexTransform.position.xyz;
-		//vFogPos = normalize(wPos.xyz - cCameraPos.xyz)
+		mat4 modelMatrix = GetModelMatrix();
+		vec4 wPos = vec4(iPos.xyz, 0.0) * modelMatrix;
+		vSkyPos = normalize(vertexTransform.position.xyz - cCameraPos.xyz);
+		
 	#endif
 }
 #endif
@@ -188,7 +199,7 @@ void main()
     #endif
 	
 	surfaceData.albedo = GammaToLightSpaceAlpha(cMatDiffColor) * GammaToLightSpaceAlpha(diffColor);
-	surfaceData.normalInTangentSpace = samplenormal;
+	//surfaceData.normalInTangentSpace = samplenormal;
 	surfaceData.normal = normal;
 		
 	#ifdef URHO3D_SURFACE_NEED_AMBIENT
@@ -199,8 +210,9 @@ void main()
 	float fogFactor = surfaceData.fogFactor;
 	
 	#ifdef SCATTERING
-		vec3 fogpos = normalize(vFogPos.xyz - cCameraPos.xyz);
-		vec4 fogcolor = CalculateSkyAndClouds(cBr, cBm, cG, cCirrus, cCumulus, cCumulusBrightness, cCloudTime, fogpos, vSun);
+		vec3 fogpos = normalize(vSkyPos.xyz - cCameraPos.xyz);
+		//vec4 fogcolor = CalculateSkyAndClouds(cBr, cBm, cG, cCirrus, cCumulus, cCumulusBrightness, cCloudTime, fogpos, vSun);
+		vec3 fogcolor = skycolor();
 			
 		#ifndef URHO3D_ADDITIVE_LIGHT_PASS
 			surfaceData.albedo.rgb = mix(fogcolor.rgb, finalColor, fogFactor);

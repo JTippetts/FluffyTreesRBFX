@@ -4,6 +4,9 @@
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Math/Matrix3.h>
 #include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Scene/Node.h>
 
 using namespace Urho3D;
 
@@ -16,11 +19,17 @@ public:
 
 	void AddMaterial(Material* mat);
 
+	void SetupLights(Scene* scene);
+
 
 protected:
 	Matrix3 sunTransform_;
 	Matrix3 moonTransform_;
 	ea::vector<WeakPtr<Material>> materials_;
+	Node* sunlightnode_{ nullptr };
+	Node* moonlightnode_{ nullptr };
+	Light* sunlight_{ nullptr };
+	Light* moonlight_{ nullptr };
 
 	// Time constants
 	float hoursPerDay_{ 24.f };
