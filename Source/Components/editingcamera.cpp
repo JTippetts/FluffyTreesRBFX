@@ -7,6 +7,7 @@
 #include <Urho3D/Graphics/OctreeQuery.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Graphics/Terrain.h>
 
 EditingCamera::EditingCamera(Context *context) : LogicComponent(context),
 	pitch_(30), yaw_(180),
@@ -185,6 +186,20 @@ void EditingCamera::Update(float dt)
 	Vector3 np=mypos+trans;
 	np.x_=std::max(minbounds_.x_, std::min(maxbounds_.x_, np.x_));
 	np.z_=std::max(minbounds_.y_, std::min(maxbounds_.y_, np.z_));
+
+	if (tracksurface_)
+	{
+		Node* tnode = node_->GetScene()->GetChild("Terrain", true);
+		if (tnode)
+		{
+			Terrain* t = tnode->GetComponent<Terrain>();
+			if (t)
+			{
+				float ht = t->GetHeight(np);
+				np.y_ = ht + offset_;
+			}
+		}
+	}
 
 	/*if (tracksurface_ && terrainContext_)
 	{

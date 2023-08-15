@@ -104,7 +104,7 @@ void Game::Start()
 
     Node* node = scene_->CreateChild("CameraNode");
     EditingCamera* camera = node->CreateComponent<EditingCamera>();
-    camera->SetCameraBounds(Vector2(-200, -200), Vector2(200, 200));
+    camera->SetCameraBounds(Vector2(-1000, -1000), Vector2(1000, 1000));
     camera->SetScrollSpeed(32.0f);
     camera->SetMaxFollow(600.f);
     camera->SetFarClip(700.f);
@@ -232,7 +232,7 @@ void Game::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     time_ += dt;
     if (time_ > 3.f) time_ = 0.f;
-    totaltime_ += dt*0.1f;
+    totaltime_ += dt;
 
     weathertime_ -= dt;
 

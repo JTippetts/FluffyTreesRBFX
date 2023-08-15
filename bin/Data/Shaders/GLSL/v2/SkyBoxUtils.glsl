@@ -90,7 +90,7 @@ vec3 skycolor()
 	sunColor *= (1 - moonMask) * mix(1, 16, solarEclipse01);
 	
 	#ifdef DRAW_STARS
-		float starnoise = snoise(vSkyPos*60.0+12);
+		float starnoise = snoise(vSkyPos*80.0+12);
 		float starmask = step(0.95, starnoise);
 		//vec3 starColor = texture(sGradients0, vec3(snoise(vSkyPos*40.0+20), 0.5, 4)).rgb * starmask * horizon * max(0, min(1, -cSunDir.y)) * (1.0 - moonMask) * (1.0 - svMask);
 		vec3 starColor = texture(sGradients0, vec2(snoise(vSkyPos*40.0+20), 0.068359375)).rgb * starmask * horizon * max(0, min(1, -cSunDir.y)) * (1.0 - moonMask) * (1.0 - svMask);

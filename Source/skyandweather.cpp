@@ -78,7 +78,7 @@ void SkyAndWeather::UpdateMaterials()
 			m->SetShaderParameter("SunDir", Variant(sunTransform_.Column(2)));
 			m->SetShaderParameter("MoonDir", Variant(moonTransform_.Column(2)));
 			m->SetShaderParameter("MoonTransform", Variant(invmoon));
-			m->SetShaderParameter("CloudData", Variant(Vector4(0, 0, 0, cloudTime_)));
+			//m->SetShaderParameter("CloudData", Variant(Vector4(0, 0, 0, cloudTime_)));
 		}
 	}
 }
@@ -120,7 +120,7 @@ void SkyAndWeather::HandleUpdate(StringHash eventType, VariantMap& eventData)
 	moonlightnode_->SetDirection(-moondir);
 
 	float sunbright = SmoothStep(-0.05f, 0.1f, sundir.y_) * 0.75f;
-	float moonbright = SmoothStep(-0.05f, 0.1f, moondir.y_) * 0.25f;
+	float moonbright = SmoothStep(-0.05f, 0.1f, moondir.y_) * 0.25f * (1.f - sunbright);
 
 	sunlight_->SetBrightness(sunbright);
 	moonlight_->SetBrightness(moonbright);
